@@ -37,8 +37,7 @@ export default function GoogleAuthScreen({ navigation }) {
                 const userData = validateResponse.data;
     
                 if (userData.success) {
-                    // navigation.navigate('Home');
-                    console.log("Yes");
+                    navigation.navigate('Home');
                 } else {
                     throw new Error("Authentication failed");
                 }
