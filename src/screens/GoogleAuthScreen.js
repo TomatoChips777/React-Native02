@@ -1,65 +1,101 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Button, Alert, ActivityIndicator } from 'react-native';
-import * as AuthSession from 'expo-auth-session';
-import axios from "react-native-axios";
-
-
-const BACKEND_URL = "http://192.168.218.3/test_login/google_auth.php";
+import React, { useState, useContext } from 'react';
+import { View, Text, StyleSheet, Alert, Button, Image } from 'react-native';
+import {
+    GoogleSignin,
+    GoogleSigninButton,
+    statusCodes,
+} from '@react-native-google-signin/google-signin';
+import { WEB_CLIENT_ID } from '../const/key';
+import { AuthContext } from '../../AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { jwtDecode } from 'jwt-decode';
+// import { Signin } from '../const/signin';
+GoogleSignin.configure({
+    webClientId: WEB_CLIENT_ID,
+    scopes: ['profile', 'email'],
+    forceCodeForRefreshToken: true,
+});
 
 export default function GoogleAuthScreen({ navigation }) {
-    const [loading, setLoading] = useState(false);
+    const [userInfo, setUserInfo] = useState(null);
+    const { setToken, setUserId } = useContext(AuthContext);
 
-    const handleGoogleLogin = async () => {
+    const signIn = async () => {
         try {
-            setLoading(true);
-    
-            // Get Google Auth URL from PHP backend
-            const response = await axios.get(BACKEND_URL);
-            const { data } = response;
-    
-            if (!data.auth_url) {
-                throw new Error("Could not get Google Auth URL");
-            }
-    
-            // Configure authentication request
-            const authRequest = new AuthSession.AuthRequest({
-                redirectUri: AuthSession.makeRedirectUri({ useProxy: true }),
-            });
-    
-            // Open browser for Google authentication
-            const result = await authRequest.promptAsync(data.auth_url);
-    
-            if (result.type === 'success' && result.params.code) {
-                // Send auth code to backend for validation
-                const validateResponse = await axios.get(
-                    `http://192.168.218.3/test_login/redirect.php?code=${result.params.code}`
-                );
-                const userData = validateResponse.data;
-    
-                if (userData.success) {
-                    navigation.navigate('Home');
-                } else {
-                    throw new Error("Authentication failed");
-                }
+            await GoogleSignin.hasPlayServices();
+            const response = await GoogleSignin.signIn();
+            if (response) {
+                setUserInfo(response);
+                const idToken = response.data.idToken;
+                await AsyncStorage.setItem('authToken', idToken);
+                const decodedToken = jwtDecode(idToken);
+                setUserId(decodedToken.userId);
+                setToken(idToken);
+                navigation.navigate('Home', { token: idToken, userInfo: response });
+            } else {
+                alert('Sign-in cancelled by user');
             }
         } catch (error) {
-            console.error("Google Login Error:", error);
-            Alert.alert(
-                "Error",
-                error.response?.data?.message || error.message || "Failed to connect to the server"
-            );
-        } finally {
-            setLoading(false);
+            switch (error.code) {
+                case statusCodes.SIGN_IN_CANCELLED:
+                    Alert.alert('Sign-in cancelled');
+                    break;
+                case statusCodes.IN_PROGRESS:
+                    Alert.alert('Sign-in in progress');
+                    break;
+                case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+                    Alert.alert('Play services not available');
+                    break;
+                default:
+                    console.log('Sign-in error', error);
+            }
         }
     };
 
+    const signOut = async () => {
+        try {
+            await GoogleSignin.signOut();
+            await AsyncStorage.removeItem('authToken');
+            setUserInfo(null); // Clear user info on logout
+            setToken('');
+            setUserId('');
+            Alert.alert('Logged out successfully');
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    };
+
+//     return (
+//         <View style={styles.container}>
+//                 <GoogleSigninButton
+//                     style={{ width: 200, height: 70, borderRadius: 10 }}
+//                     size={GoogleSigninButton.Size.Wide}
+//                     color={GoogleSigninButton.Color.Dark}
+//                     onPress={signIn}
+//                 />
+//         </View>
+//     );
+// }
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Google Authentication</Text>
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
+            {!userInfo ? (
+                <GoogleSigninButton
+                    style={{ width: 200, height: 70, borderRadius: 10 }}
+                    size={GoogleSigninButton.Size.Wide}
+                    color={GoogleSigninButton.Color.Dark}
+                    onPress={signIn}
+                />
             ) : (
-                <Button title="Login with Google" onPress={handleGoogleLogin} />
+                <View style={styles.userContainer}>
+                    <Image 
+                        source={{ uri: userInfo.data.user.photo }} 
+                        style={styles.profileImage} 
+                    />
+                    <Text style={styles.userText}>
+                        Welcome, {userInfo.data.user.givenName}!
+                    </Text>
+                    <Button title="Logout" onPress={signOut} color="red" />
+                </View>
             )}
         </View>
     );
@@ -71,9 +107,18 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    title: {
-        fontSize: 20,
+    userContainer: {
+        alignItems: 'center',
+    },
+    userText: {
+        marginTop: 10,
+        fontSize: 18,
         fontWeight: 'bold',
-        marginBottom: 20,
+    },
+    profileImage: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        marginBottom: 10,
     },
 });

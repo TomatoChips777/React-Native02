@@ -1,18 +1,18 @@
 import * as React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 
-function HomeScreen() {
+function HomeScreen({route}) {
+    const {token, userInfo} = route.params || {};
     const navigation = useNavigation();
-
     return (
         <ScrollView style={{ padding: 15, backgroundColor: '#f5f5f5' }}>
             <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>Campus Reporting System</Text>
 
             {/* Additional Display Section */}
             <View style={styles.infoCard}>
-                <Text style={styles.infoTitle}>📌 Important Updates</Text>
+                <Text style={styles.infoTitle}>📌 Important Updates, {userInfo?.data?.user?.name || 'Guest'}!</Text>
                 <Text style={styles.infoText}>- Report maintenance issues and campus concerns</Text>
                 <Text style={styles.infoText}>- Lost & Found office at Student Center</Text>
                 <Text style={styles.infoText}>- Safety tip: Always report suspicious activities</Text>
@@ -35,6 +35,8 @@ function HomeScreen() {
                 <Text style={styles.cardTitle}>🔍 Lost & Found</Text>
                 <Text style={styles.cardDesc}>Report lost items or check found items on campus.</Text>
             </TouchableOpacity>
+
+            <Button title="Logout" onPress={()=>navigation.navigate('GoogleAuth')} color="red" />
         </ScrollView>
     );
 }
