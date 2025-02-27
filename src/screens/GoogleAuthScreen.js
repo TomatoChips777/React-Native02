@@ -31,7 +31,7 @@ export default function GoogleAuthScreen({ navigation }) {
                 const decodedToken = jwtDecode(idToken);
                 setUserId(decodedToken.userId);
                 setToken(idToken);
-                navigation.navigate('Home', { token: idToken, userInfo: response });
+                // navigation.navigate('Drawer', { token: idToken, userInfo: response });
             } else {
                 alert('Sign-in cancelled by user');
             }
