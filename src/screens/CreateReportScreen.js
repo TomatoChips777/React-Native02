@@ -1,44 +1,72 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
-    View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView 
+    View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert, ScrollView, ActivityIndicator
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
+import ReportModel from '../../backend/report-api';
+import { AuthContext } from '../../AuthContext';
 
 function CreateReportScreen({ navigation, route }) {
+    const { user } = useContext(AuthContext);
     const existingReport = route.params?.report;
-    // console.log("Existing report:", existingReport);
 
-    // State variables (initialized as empty)
+    // State variables
     const [location, setLocation] = useState('');
     const [issueType, setIssueType] = useState('');
     const [description, setDescription] = useState('');
     const [image, setImage] = useState(null);
+    const [loading, setLoading] = useState(false);
 
-    // Update the state when the report is passed in the route
     useEffect(() => {
         if (existingReport) {
             setLocation(existingReport.location || '');
-            setIssueType(existingReport.issueType || '');
+            setIssueType(existingReport.issue_type || '');
             setDescription(existingReport.description || '');
-            setImage(existingReport.image || null);
+            setImage(existingReport.image_path || null);
         }
-    }, [existingReport]); // Dependency array ensures this runs when `existingReport` changes
+    }, [existingReport]);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!location || !issueType || !description) {
             Alert.alert('Error', 'Please fill out all required fields.');
             return;
         }
 
-        if (existingReport) {
-            Alert.alert('Success', 'Your report has been updated!');
-        } else {
-            Alert.alert('Success', 'Your report has been submitted!');
-        }
+        setLoading(true);
 
-        navigation.goBack();
+        if (existingReport) {
+            // Update report
+            const response = await ReportModel.updateReport(
+                existingReport.id,
+                location,
+                issueType,
+                description,
+                image,
+                user.userId
+            );
+
+            setLoading(false);
+            if (response.success) {
+                Alert.alert('Success', 'Your report has been updated!');
+                navigation.goBack();
+            } else {
+                Alert.alert('Error', response.message || 'Failed to update report.');
+            }
+        } else {
+            // Create new report
+            const response = await ReportModel.createReport(location, issueType, description, image);
+            
+            setLoading(false);
+
+            if (response.success) {
+                Alert.alert('Success', 'Your report has been submitted!');
+                navigation.goBack();
+            } else {
+                Alert.alert('Error', response.message || 'Failed to submit report.');
+            }
+        }
     };
 
     const pickImage = async () => {
@@ -97,12 +125,16 @@ function CreateReportScreen({ navigation, route }) {
                 <Text style={styles.imageButtonText}>Upload Image</Text>
             </TouchableOpacity>
 
-            {image && (
-                <Image source={{ uri: image }} style={styles.imagePreview} />
-            )}
+            {image && <Image source={{ uri: image }} style={styles.imagePreview} />}
 
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-                <Text style={styles.submitButtonText}>{existingReport ? '✅ Update Report' : '📤 Submit Report'}</Text>
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit} disabled={loading}>
+                {loading ? (
+                    <ActivityIndicator color="white" />
+                ) : (
+                    <Text style={styles.submitButtonText}>
+                        {existingReport ? '✅ Update Report' : '📤 Submit Report'}
+                    </Text>
+                )}
             </TouchableOpacity>
         </ScrollView>
     );

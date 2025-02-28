@@ -1,12 +1,15 @@
 import * as React from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
-import { Ionicons } from '@expo/vector-icons'; // For icons
+import { Ionicons } from '@expo/vector-icons';
+import { useContext } from 'react';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import { AuthContext } from '../../AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import HomeScreen from '../screens/HomeScreen';
 import NotificationsScreen from '../screens/NotificationsScreen';
 import ReportStack from './ReportStack';
 import LostAndFoundStack from './LostAndFoundStack';
-import GoogleAuthScreen from '../screens/GoogleAuthScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -25,7 +28,6 @@ const DrawerNavigator = () => {
         },
         headerRight: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-            {/* Notification Icon */}
             <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={{ marginRight: 15 }}>
               <Ionicons name="notifications-outline" size={24} color="white" />
             </TouchableOpacity>
@@ -33,7 +35,6 @@ const DrawerNavigator = () => {
         ),
       })}
     >
-      {/* <Drawer.Screen name="GoogleAuth" component={GoogleAuthScreen} options={{ title: "Login" }} /> */}
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Reports" component={ReportStack} />
       <Drawer.Screen name="Lost And Found" component={LostAndFoundStack} />
@@ -42,24 +43,48 @@ const DrawerNavigator = () => {
   );
 }
 
-// Custom Sidebar Content
 function CustomDrawerContent(props) {
+  const { signOut, user} = useContext(AuthContext);
+
+  const handleSignOut = async () => {
+    try {
+      await GoogleSignin.signOut();
+      await signOut();
+      // Alert.alert('Success', 'Signed out successfully');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Alert.alert('Error', 'Failed to sign out');
+    }
+  };
+
+  const showSignOutMenu = () => {
+    Alert.alert(
+      "Sign Out",
+      "Are you sure you want to sign out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Sign Out", 
+          onPress: handleSignOut,
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
   return (
     <DrawerContentScrollView {...props}>
-      {/* User Profile Section */}
       <View style={styles.profileContainer}>
         <Image 
-          source={{ uri: 'https://via.placeholder.com/80' }} // Replace with user's profile image URL
+          source={{ uri: user?.photo || 'https://via.placeholder.com/80' }}
           style={styles.drawerProfileImage}
         />
-        <Text style={styles.userName}>John Doe</Text>
-        <Text style={styles.userEmail}>johndoe@example.com</Text>
+        <Text style={styles.userName}>{user?.name || 'John Doe'}</Text>
+        <Text style={styles.userEmail}>{user?.email || 'w2B2V@example.com'}</Text>
       </View>
 
-      {/* Drawer Items */}
       <DrawerItemList {...props} />
 
-      {/* Sign-Out Button */}
       <TouchableOpacity style={styles.signOutButton} onPress={showSignOutMenu}>
         <Ionicons name="log-out-outline" size={20} color="red" style={{ marginRight: 10 }} />
         <Text style={{ fontSize: 16, color: 'red' }}>Sign Out</Text>
@@ -68,19 +93,6 @@ function CustomDrawerContent(props) {
   );
 }
 
-// Function to handle sign-out
-const showSignOutMenu = () => {
-  Alert.alert(
-    "Sign Out",
-    "Are you sure you want to sign out?",
-    [
-      { text: "Cancel", style: "cancel" },
-      { text: "Sign Out", onPress: () => console.log("User signed out") }
-    ]
-  );
-};
-
-// Styles
 const styles = StyleSheet.create({
     profileContainer: {
         alignItems: 'center',
@@ -101,14 +113,7 @@ const styles = StyleSheet.create({
     },
     userEmail: {
         fontSize: 14,
-        color: 'gray',
-    },
-    profileImage: {
-        width: 35,
-        height: 35,
-        borderRadius: 50,
-        borderWidth: 2,
-        borderColor: 'white',
+        color: '#666',
     },
     signOutButton: {
         flexDirection: 'row',
@@ -116,8 +121,8 @@ const styles = StyleSheet.create({
         padding: 15,
         borderTopWidth: 1,
         borderTopColor: '#ddd',
-        marginTop: 10,
-    },
+        marginTop: 'auto',
+    }
 });
 
 export default DrawerNavigator;

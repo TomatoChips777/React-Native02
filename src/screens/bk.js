@@ -1,9 +1,9 @@
-import React, { useState, useContext, use } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
 import { WEB_CLIENT_ID } from '../const/key';
 import { AuthContext } from '../../AuthContext';
-import axios from 'react-native-axios/lib/axios';
+
 GoogleSignin.configure({
     webClientId: WEB_CLIENT_ID,
     scopes: ['profile', 'email'],
@@ -15,33 +15,15 @@ export default function GoogleAuthScreen() {
 
     const handleSignIn = async () => {
         try {
-            // Ensure Google Play services are available
             await GoogleSignin.hasPlayServices();
-            
-            // Sign in via Google
             const userInfo = await GoogleSignin.signIn();
             
             if (userInfo?.data?.idToken) {
-                // Send the ID token to the backend for authentication
-                const response = await axios.post('http://192.168.218.3/LormaER/public/mobile-backend/mobile-login.php', {
-                    email: userInfo.data.user.email,
-                    name: userInfo.data.user.name,
-                    picture: userInfo.data.user.photo,
-                    idToken: userInfo.data.idToken
-                });
-                
-                if (response.data.success) {
-                    // If backend login is successful, use the token received
-                    await signIn(response.data.token, response.data.user_data);  // Assuming `userId` is returned from backend
-                } else {
-                    console.log(userInfo.data.idToken);
-                    Alert.alert('Error', response.data.message || 'Failed to authenticate');
-                }
+                await signIn(userInfo.data.idToken);
             } else {
                 Alert.alert('Error', 'Failed to get authentication token');
             }
         } catch (error) {
-            // Handle errors such as sign-in cancellation or Play Services issues
             switch (error.code) {
                 case statusCodes.SIGN_IN_CANCELLED:
                     Alert.alert('Sign-in cancelled');
@@ -77,25 +59,25 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#f0f4f8',
+        backgroundColor: '#f0f4f8', // Soft, light background color
         padding: 20,
     },
     title: {
         fontSize: 32,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#333',  // Dark text color for better contrast
         marginBottom: 10,
     },
     subtitle: {
         fontSize: 16,
-        color: '#666',
+        color: '#666',  // Lighter color for the subtitle
         marginBottom: 30,
     },
     signInButton: {
         width: 300,
         height: 60,
-        borderRadius: 12,
+        borderRadius: 12,  // Rounded corners for a smoother look
         marginTop: 20,
-        elevation: 5,
+        elevation: 5,  // Adding shadow for better depth perception
     },
 });

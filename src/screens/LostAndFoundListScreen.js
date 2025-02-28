@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, FlatList, TextInput, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
+import { AuthContext } from '../../AuthContext';
 
 function LostAndFoundListScreen() {
+    const { user} = useContext(AuthContext);
+    // console.log(user);
     const navigation = useNavigation();
     const [searchQuery, setSearchQuery] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
@@ -14,7 +17,7 @@ function LostAndFoundListScreen() {
             category: 'Electronics', 
             title: 'Lost iPhone', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100',
+            image:  user.photo,
             description: 'Black iPhone 12 lost near the library.'
         },
         { 
@@ -22,7 +25,7 @@ function LostAndFoundListScreen() {
             category: 'Clothing', 
             title: 'Found Red Jacket', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A red Adidas jacket found in the cafeteria.'
         },
         { 
@@ -30,7 +33,7 @@ function LostAndFoundListScreen() {
             category: 'Accessories', 
             title: 'Lost Wristwatch', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'Silver wristwatch lost at the gym area.'
         },
         { 
@@ -38,7 +41,7 @@ function LostAndFoundListScreen() {
             category: 'Documents', 
             title: 'Found ID Card', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A student ID card found in the parking lot.'
         },
         { 
@@ -46,7 +49,7 @@ function LostAndFoundListScreen() {
             category: 'Electronics', 
             title: 'Lost iPhone', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100', // Replace with actual image URL
+            image: user.photo, // Replace with actual image URL
             description: 'Black iPhone 12 lost near the library.'
         },
         { 
@@ -54,7 +57,7 @@ function LostAndFoundListScreen() {
             category: 'Clothing', 
             title: 'Found Red Jacket', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A red Adidas jacket found in the cafeteria.'
         },
         { 
@@ -62,7 +65,7 @@ function LostAndFoundListScreen() {
             category: 'Accessories', 
             title: 'Lost Wristwatch', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'Silver wristwatch lost at the gym area.'
         },
         { 
@@ -70,14 +73,14 @@ function LostAndFoundListScreen() {
             category: 'Documents', 
             title: 'Found ID Card', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A student ID card found in the parking lot.'
         },{ 
             id: '9', 
             category: 'Electronics', 
             title: 'Lost iPhone', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100', // Replace with actual image URL
+            image: user.photo, // Replace with actual image URL
             description: 'Black iPhone 12 lost near the library.'
         },
         { 
@@ -85,7 +88,7 @@ function LostAndFoundListScreen() {
             category: 'Clothing', 
             title: 'Found Red Jacket', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A red Adidas jacket found in the cafeteria.'
         },
         { 
@@ -93,7 +96,7 @@ function LostAndFoundListScreen() {
             category: 'Accessories', 
             title: 'Lost Wristwatch', 
             status: 'Lost',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'Silver wristwatch lost at the gym area.'
         },
         { 
@@ -101,7 +104,7 @@ function LostAndFoundListScreen() {
             category: 'Documents', 
             title: 'Found ID Card', 
             status: 'Found',
-            image: 'https://via.placeholder.com/100',
+            image: user.photo,
             description: 'A student ID card found in the parking lot.'
         },
     ]);
@@ -142,7 +145,7 @@ function LostAndFoundListScreen() {
                 data={filteredItems}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
-                    <View style={[styles.item, item.status === 'Lost' ? styles.lost : styles.found]}>
+                    <TouchableOpacity style={[styles.item, item.status === 'Lost' ? styles.lost : styles.found]}>
                         <Image source={{ uri: item.image }} style={styles.itemImage} />
                         <View style={styles.itemDetails}>
                             <Text style={styles.itemTitle}>{item.title}</Text>
@@ -150,7 +153,7 @@ function LostAndFoundListScreen() {
                             <Text style={styles.itemDescription}>{item.description}</Text>
                             <Text style={styles.itemStatus}>{item.status}</Text>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 )} 
             />
             
@@ -195,12 +198,14 @@ const styles = StyleSheet.create({
         padding: 15,
         marginVertical: 5,
         borderRadius: 8,
+        elevation: 1,
+        
     },
     lost: {
-        backgroundColor: '#FFC107',
+        backgroundColor: '#fff',
     },
     found: {
-        backgroundColor: '#28A745',
+        backgroundColor: '#fff',
     },
     itemImage: {
         width: 80,
@@ -214,21 +219,21 @@ const styles = StyleSheet.create({
     itemTitle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
     },
     itemCategory: {
         fontSize: 14,
-        color: 'white',
+        color: 'black',
     },
     itemDescription: {
         fontSize: 13,
-        color: 'white',
+        color: 'black',
         marginBottom: 5,
     },
     itemStatus: {
         fontSize: 14,
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
     },
     postButton: {
         backgroundColor: '#198754',

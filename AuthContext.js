@@ -1,34 +1,104 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {jwtDecode} from 'jwt-decode';
-import {createContext, useEffect, useState} from 'react';
-
+import { createContext, useEffect, useState } from 'react';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+import axios from 'react-native-axios/lib/axios';
 const AuthContext = createContext();
 
-const AuthProvider = ({children}) => {
-  const [token, setToken] = useState('');
-  const [userId, setUserId] = useState('');
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = await AsyncStorage.getItem('authToken');
-      const decodedToken = jwtDecode(token);
-      const userId = decodedToken.userId;
-      setUserId(userId);
-    };
+const AuthProvider = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);  // Add user state to store user details
+  const [token, setToken] = useState(null);
 
-    fetchUser();
+  useEffect(() => {
+    loadStoredAuth();
   }, []);
+
+  const loadStoredAuth = async () => {
+    try {
+      const storedToken = await AsyncStorage.getItem('authToken');
+      if (storedToken) {
+        setToken(storedToken);
+        setIsAuthenticated(true);
+        await loadUserProfile(storedToken);  // Load user profile if token exists
+      }
+    } catch (error) {
+      console.error('Error loading auth:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadUserProfile = async (token) => {
+    try {
+       
+        if (!token) return;
+
+        const response = await axios.post('http://192.168.218.3/LormaER/public/mobile-backend/get-user.php', {
+            idToken: token,  // Send token in request body
+        });
+
+        if (response.data.success) {
+            setUser(response.data.user_data); // Set user details in context
+        } else {
+            console.error(response.data.message);
+        }
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+    }
+};
+
+  // const loadUserProfile = async () => {
+  //   try {
+  //     const userInfo = await GoogleSignin.signInSilently(); 
+  //     setUser(userInfo.data.user); 
+  //   } catch (error) {
+  //     console.error('Error loading user profile:', error);
+  //   }
+  // };
+
+  const signIn = async (newToken, userInfo) => {
+    try {
+      if (!newToken) {
+        throw new Error('No token provided');
+      }
+      await AsyncStorage.setItem('authToken', newToken);
+      setToken(newToken);
+      setUser(userInfo); 
+      setIsAuthenticated(true);
+    } catch (error) {
+      console.error('Error signing in:', error);
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try { 
+      await AsyncStorage.removeItem('authToken');
+      setToken(null);
+      setUser(null);  // Clear user details
+      setIsAuthenticated(false);
+      await GoogleSignin.signOut();  // Google sign out
+    } catch (error) {
+      console.error('Error signing out:', error);
+      throw error;
+    }
+  };
 
   return (
     <AuthContext.Provider
       value={{
+        isLoading,
+        isAuthenticated,
         token,
-        setToken,
-        userId,
-        setUserId,
-      }}>
+        user,  // Provide user details through context
+        signIn,
+        signOut,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export {AuthContext, AuthProvider};
+export { AuthContext, AuthProvider };

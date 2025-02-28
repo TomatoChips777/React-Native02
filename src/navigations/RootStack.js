@@ -1,23 +1,26 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack';
-import GoogleAuthScreen from '../screens/GoogleAuthScreen';
-import Drawer from './Drawer';
+import React, { useContext } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-const Stack = createStackNavigator();
+import { View, ActivityIndicator } from 'react-native';
+import { AuthContext } from '../../AuthContext';
+import AuthStack from './AuthStack';
+import Drawer from './Drawer';
 
 const RootStack = () => {
+    const { isLoading, isAuthenticated } = useContext(AuthContext);
+
+    if (isLoading) {
+        return (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                <ActivityIndicator size="large" />
+            </View>
+        );
+    }
+
     return (
         <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}
-        initialRouteName='GoogleAuth'
-        >
-            <Stack.Screen name="GoogleAuth" component={GoogleAuthScreen} />
-            <Stack.Screen name="Drawer" component={Drawer} />
-            
-        </Stack.Navigator>
+            {isAuthenticated ? <Drawer /> : <AuthStack />}
         </NavigationContainer>
     );
-}
+};
 
-export default RootStack
+export default RootStack;
