@@ -66,6 +66,7 @@ const AuthProvider = ({ children }) => {
       setToken(newToken);
       setUser(userInfo); 
       setIsAuthenticated(true);
+      await loadUserProfile(newToken);
     } catch (error) {
       console.error('Error signing in:', error);
       throw error;

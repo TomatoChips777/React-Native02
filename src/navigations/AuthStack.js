@@ -1,19 +1,28 @@
-import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import GoogleAuthScreen from '../screens/GoogleAuthScreen';
+import { View, Text } from 'react-native'
+import React from 'react'
+import { createStackNavigator } from '@react-navigation/stack'
+import LoginScreen from '../screens/LoginScreen';
 
 const Stack = createStackNavigator();
 
 const AuthStack = () => {
   return (
-    <Stack.Navigator 
-      screenOptions={{ 
-        headerShown: false 
+    <Stack.Navigator
+      screenOptions={{
+        headerTitleAlign: 'center',
+        headerStyle: {
+          backgroundColor: '#198754',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+          fontSize: 20
+        }
       }}
     >
-      <Stack.Screen name="GoogleAuth" component={GoogleAuthScreen} />
+      <Stack.Screen name="Login" component={LoginScreen} />
     </Stack.Navigator>
-  );
-};
+  )
+}
 
 export default AuthStack;

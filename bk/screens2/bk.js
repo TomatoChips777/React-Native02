@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
-import { WEB_CLIENT_ID } from '../const/key';
+import { WEB_CLIENT_ID } from '../../src/const/key';
 import { AuthContext } from '../../AuthContext';
 
 GoogleSignin.configure({

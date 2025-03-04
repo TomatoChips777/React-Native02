@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, use } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
-import { WEB_CLIENT_ID } from '../const/key';
+import { WEB_CLIENT_ID } from '../../src/const/key';
 import { AuthContext } from '../../AuthContext';
 import axios from 'react-native-axios/lib/axios';
 GoogleSignin.configure({
@@ -31,10 +31,10 @@ export default function GoogleAuthScreen() {
                 });
                 
                 if (response.data.success) {
-                    
                     // If backend login is successful, use the token received
                     await signIn(response.data.token, response.data.user_data);  // Assuming `userId` is returned from backend
                 } else {
+                    console.log(userInfo.data.idToken);
                     Alert.alert('Error', response.data.message || 'Failed to authenticate');
                 }
             } else {

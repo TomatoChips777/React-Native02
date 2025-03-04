@@ -1,12 +1,13 @@
-import React, { useContext } from 'react';
+import { View, Text, ActivityIndicator } from 'react-native'
+import { createStackNavigator } from '@react-navigation/stack'
+import React, { useContext } from 'react'
 import { NavigationContainer } from '@react-navigation/native';
-import { View, ActivityIndicator } from 'react-native';
+import DrawerStack from './DrawerStack';
 import { AuthContext } from '../../AuthContext';
 import AuthStack from './AuthStack';
-import Drawer from './Drawer';
-
+const Stack = createStackNavigator();
 const RootStack = () => {
-    const { isLoading, isAuthenticated } = useContext(AuthContext);
+    const {isLoading, isAuthenticated} = useContext(AuthContext);
 
     if (isLoading) {
         return (
@@ -15,12 +16,11 @@ const RootStack = () => {
             </View>
         );
     }
+  return (
+    <NavigationContainer>
+         {isAuthenticated ? <DrawerStack/> : <AuthStack/> }
+    </NavigationContainer>
+  )
+}
 
-    return (
-        <NavigationContainer>
-            {isAuthenticated ? <Drawer /> : <AuthStack />}
-        </NavigationContainer>
-    );
-};
-
-export default RootStack;
+export default RootStack

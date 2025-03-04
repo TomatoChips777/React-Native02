@@ -1,8 +1,8 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import LostAndFoundScreen from '../screens/LostAndFoundScreen';
-import LostAndFoundListScreen from '../screens/LostAndFoundListScreen';
-import CreateLostAndFoundScreen from '../screens/CreateLostAndFoundScreen';
+import LostAndFoundScreen from '../screens2/LostAndFoundScreen';
+import LostAndFoundListScreen from '../screens2/LostAndFoundListScreen';
+import CreateLostAndFoundScreen from '../screens2/CreateLostAndFoundScreen';
 const Stack = createStackNavigator();
 
 function LostAndFoundStack() {

@@ -1,7 +1,7 @@
 import React, { useState, useContext, use } from 'react';
 import { View, Text, StyleSheet, Alert } from 'react-native';
 import { GoogleSignin, GoogleSigninButton, statusCodes } from '@react-native-google-signin/google-signin';
-import { WEB_CLIENT_ID } from '../const/key';
+import { WEB_CLIENT_ID } from '../../src/const/key';
 import { AuthContext } from '../../AuthContext';
 import axios from 'react-native-axios/lib/axios';
 GoogleSignin.configure({
@@ -10,7 +10,7 @@ GoogleSignin.configure({
     forceCodeForRefreshToken: true,
 });
 
-export default function GoogleAuthScreen() {
+export default function LoginScreen() {
     const { signIn } = useContext(AuthContext);
 
     const handleSignIn = async () => {
@@ -20,6 +20,7 @@ export default function GoogleAuthScreen() {
             
             // Sign in via Google
             const userInfo = await GoogleSignin.signIn();
+            // console.log(userInfo.data.idToken);
             
             if (userInfo?.data?.idToken) {
                 // Send the ID token to the backend for authentication
@@ -29,7 +30,6 @@ export default function GoogleAuthScreen() {
                     picture: userInfo.data.user.photo,
                     idToken: userInfo.data.idToken
                 });
-                
                 if (response.data.success) {
                     // If backend login is successful, use the token received
                     await signIn(response.data.token, response.data.user_data);  // Assuming `userId` is returned from backend

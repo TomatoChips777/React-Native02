@@ -6,8 +6,8 @@ import { useContext } from 'react';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { AuthContext } from '../../AuthContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import HomeScreen from '../screens/HomeScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
+import HomeScreen from '../screens2/HomeScreen';
+import NotificationsScreen from '../screens2/NotificationsScreen';
 import ReportStack from './ReportStack';
 import LostAndFoundStack from './LostAndFoundStack';
 

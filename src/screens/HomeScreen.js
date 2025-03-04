@@ -1,82 +1,127 @@
-import * as React from 'react';
-import { View, Text, TouchableOpacity, Button } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 
-function HomeScreen() {
-    const navigation = useNavigation();
-    return (
-        <ScrollView style={{ padding: 15, backgroundColor: '#f5f5f5' }}>
-            <Text style={{ fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>Campus Reporting System</Text>
+const HomeScreen = () => {
+  const navigation = useNavigation();
 
-            {/* Additional Display Section */}
-            <View style={styles.infoCard}>
-                <Text style={styles.infoTitle}>📌 Important Updates</Text>
-                <Text style={styles.infoText}>- Report maintenance issues and campus concerns</Text>
-                <Text style={styles.infoText}>- Lost & Found office at Student Center</Text>
-                <Text style={styles.infoText}>- Safety tip: Always report suspicious activities</Text>
-            </View>
+  return (
+    <ScrollView style={styles.scrollView} contentContainerStyle={{ paddingBottom: 30 }}>
+      <Text style={styles.title}>Campus Reporting System</Text>
 
-            {/* Report an Incident */}
-            <TouchableOpacity 
-                style={styles.card} 
-                onPress={() => navigation.navigate('Reports')}
-            >
-                <Text style={styles.cardTitle}>📢 Report maintenance issues and campus concerns</Text>
-                <Text style={styles.cardDesc}>Report issues like harassment, safety concerns, or campus violations.</Text>
-            </TouchableOpacity>
+      {/* Bulletin Board Card */}
+      <TouchableOpacity style={styles.bulletinCard} onPress={() => navigation.navigate('Details')}>
+        <Ionicons name="megaphone-outline" size={50} color="#673AB7" style={styles.bulletinCardIcon} />
+        <Text style={styles.bulletinCardTitle}>Bulletin Board</Text>
+        <Text style={styles.bulletinCardDescription}>View announcements and updates.</Text>
+      </TouchableOpacity>
 
-            {/* Lost and Found */}
-            <TouchableOpacity 
-                style={styles.card} 
-                onPress={() => navigation.navigate('Lost And Found')}
-            >
-                <Text style={styles.cardTitle}>🔍 Lost & Found</Text>
-                <Text style={styles.cardDesc}>Report lost items or check found items on campus.</Text>
-            </TouchableOpacity>
+      <View style={styles.cardContainer}>
+        <TouchableOpacity style={styles.infoCard} onPress={() => navigation.navigate('Maintenance Report')}>
+          <Ionicons name="construct-outline" size={40} color="#FF9800" style={styles.infoCardIcon} />
+          <Text style={styles.infoCardTitleText}>Maintenance Reporting</Text>
+          <Text style={styles.infoCardDescriptionText}>Report maintenance issues.</Text>
+        </TouchableOpacity>
 
-        </ScrollView>
-    );
-}
+        <TouchableOpacity style={styles.infoCard} onPress={() => navigation.navigate('Lost And Found')}>
+          <Ionicons name="cube-outline" size={40} color="#2196F3" style={styles.infoCardIcon} />
+          <Text style={styles.infoCardTitleText}>Lost & Found</Text>
+          <Text style={styles.infoCardDescriptionText}>Report or find items.</Text>
+        </TouchableOpacity>
 
-const styles = {
-    infoCard: {
-        backgroundColor: '#fffbcc',
-        padding: 15,
-        borderRadius: 10,
-        marginBottom: 15,
-        borderWidth: 1,
-        borderColor: '#ffd700',
-    },
-    infoTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    infoText: {
-        fontSize: 14,
-        color: '#555',
-    },
-    card: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        marginBottom: 15,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3, // Android shadow
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    cardDesc: {
-        fontSize: 14,
-        color: 'gray',
-    }
+        <TouchableOpacity style={styles.infoCard} onPress={() => navigation.navigate('Borrowing')}>
+          <Ionicons name="book-outline" size={40} color="#4CAF50" style={styles.infoCardIcon} />
+          <Text style={styles.infoCardTitleText}>Borrowing Items</Text>
+          <Text style={styles.infoCardDescriptionText}>Borrow items easily.</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.infoCard} onPress={() => navigation.navigate('IncidentReports')}>
+          <Ionicons name="warning-outline" size={40} color="#F44336" style={styles.infoCardIcon} />
+          <Text style={styles.infoCardTitleText}>Incident Reporting</Text>
+          <Text style={styles.infoCardDescriptionText}>Report incidents safely.</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  );
 };
 
 export default HomeScreen;
+
+const styles = StyleSheet.create({
+  scrollView: {
+    padding: 15,
+    backgroundColor: '#f0f4f7',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginVertical: 20,
+  },
+  bulletinCard: {
+    width: '100%',               // Full width for bulletin card
+    padding: 20,
+    elevation: 3,
+    backgroundColor: '#EDE7F6',  // Light purple background
+    // backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',        // Center content
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  bulletinCardIcon: {
+    marginBottom: 10,
+  },
+  bulletinCardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#673AB7',            // Darker purple for text
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  bulletinCardDescription: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  cardContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  infoCard: {
+    width: '48%',                // Two columns layout
+    padding: 15,
+    elevation: 2,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    marginBottom: 15,
+    alignItems: 'center',        // Center content
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+
+  infoCardIcon: {
+    marginBottom: 10,
+  },
+  infoCardTitleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 5,
+  },
+  infoCardDescriptionText: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+  },
+});
+ 
