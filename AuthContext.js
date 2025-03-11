@@ -16,36 +16,51 @@ const AuthProvider = ({ children }) => {
 
   const loadStoredAuth = async () => {
     try {
-      const storedToken = await AsyncStorage.getItem('authToken');
-      if (storedToken) {
-        setToken(storedToken);
+      const storedUser = await AsyncStorage.getItem('userInfo');
+      if (storedUser) {
         setIsAuthenticated(true);
-        await loadUserProfile(storedToken);  // Load user profile if token exists
+        await loadUserProfile(storedUser); 
       }
     } catch (error) {
       console.error('Error loading auth:', error);
+      signOut();
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadUserProfile = async (token) => {
+  const loadUserProfile = async (user) => {
+
     try {
-       
-        if (!token) return;
+      const response = await axios.post('http://192.168.218.3:5000/api/users/get-current-user', {
+        id: user.id,
+        email: user.email,
+      });
 
-        const response = await axios.post('http://192.168.218.3/LormaER/public/mobile-backend/get-user.php', {
-            idToken: token,  // Send token in request body
-        });
-
-        if (response.data.success) {
-            setUser(response.data.user_data); // Set user details in context
-        } else {
-            console.error(response.data.message);
-        }
+      // return response.data;
+      setUser(response.data);
     } catch (error) {
-        console.error('Error fetching user profile:', error);
+      // console.error('Error fetching user:', error);
+      signOut();
+      return null;
     }
+    // try {
+       
+    //     if (!token) return;
+
+    //     const response = await axios.post('http://192.168.218.3:5000/api/users/get-current-user', {
+    //         id: user.id,
+    //         email: user.email
+    //     });
+
+    //     if (response.data) {
+    //         setUser(response.data);
+    //     } else {
+    //         // console.error(response.data);
+    //     }
+    // } catch (error) {
+    //     console.error('Error fetching user profile:', error);
+    // }
 };
 
   // const loadUserProfile = async () => {
@@ -57,25 +72,27 @@ const AuthProvider = ({ children }) => {
   //   }
   // };
 
-  const signIn = async (newToken, userInfo) => {
+  const signIn = async (userInfo) => {
+    const newToken = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjI1ZjgyMTE3MTM3ODhiNjE0NTQ3NGI1MDI5YjAxNDFiZDViM2RlOWMiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI1ODA1Njg3MjEwMTYtZjY5cWlxbzgyZGhsN3N1bG1zMWY1dWJyNTB0YnJmNmkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI1ODA1Njg3MjEwMTYtaGFpNmkxdXBobXBlaDZqOW1vbTVpZjY2Nmg5dXY0MmIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMTE1MjE5NDM4MzQ1MDU0MDM0MjgiLCJlbWFpbCI6ImdvbGRlbmdyYXBlNzc3QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJuYW1lIjoiYW5nZWxvIGNhYmFzZSIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NKT3hIenhTV3NFMlk5bFpibzNlaEpSdlhYZC1NZkNHM1hKcnJHY1pIalRtaUNiMGc9czk2LWMiLCJnaXZlbl9uYW1lIjoiYW5nZWxvIiwiZmFtaWx5X25hbWUiOiJjYWJhc2UiLCJpYXQiOjE3NDA5NzE2NTEsImV4cCI6MTc0MDk3NTI1MX0.H_WzaaBYNfs9x-beV7t80u5ukskMrWqvXpmYpU3FH2pSaf-_zGcmc07Vi1ESaD1Xj58V2NUBeHBGUr5GTHxLBjmsqPgD0ysS23ra91eAK3oYgRcm4KhkyW9DbVk6EfrLMZ35QwA-X-h8GaM44RbAeSfdXxWKY2dk4hScHFgfy0Qw5l4rlgu0FBHOUgYyW2V4i2GGOfwNBYdKhpxwZHfvj8zqZ-wSwgkmMrVDP_sHi2UpFME_sgBS9If2gYhI2LuIaO5bAoTcqKQrd7yHtE2XlVaafM0ZM-78-VG1mjZyKEmdeA6gKDnbGTWTD0ffYyWx7BFvr469Eejpqk_fm6P04A';
     try {
       if (!newToken) {
         throw new Error('No token provided');
       }
-      await AsyncStorage.setItem('authToken', newToken);
+      await AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
       setToken(newToken);
       setUser(userInfo); 
       setIsAuthenticated(true);
-      await loadUserProfile(newToken);
+      await loadUserProfile(userInfo);
     } catch (error) {
-      console.error('Error signing in:', error);
+      // console.error('Error signing in:', error);
+      signOut();  
       throw error;
     }
   };
 
   const signOut = async () => {
     try { 
-      await AsyncStorage.removeItem('authToken');
+      await AsyncStorage.removeItem('userInfo');
       setToken(null);
       setUser(null);  // Clear user details
       setIsAuthenticated(false);
@@ -91,7 +108,6 @@ const AuthProvider = ({ children }) => {
       value={{
         isLoading,
         isAuthenticated,
-        token,
         user,  // Provide user details through context
         signIn,
         signOut,

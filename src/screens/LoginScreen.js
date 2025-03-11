@@ -23,20 +23,38 @@ export default function LoginScreen() {
             // console.log(userInfo.data.idToken);
             
             if (userInfo?.data?.idToken) {
-                // Send the ID token to the backend for authentication
-                const response = await axios.post('http://192.168.218.3/LormaER/public/mobile-backend/mobile-login.php', {
+
+                try {
+                    const response = await axios.post('http://192.168.218.3:5000/api/users/login', {
                     email: userInfo.data.user.email,
                     name: userInfo.data.user.name,
                     picture: userInfo.data.user.photo,
-                    idToken: userInfo.data.idToken
-                });
-                if (response.data.success) {
-                    // If backend login is successful, use the token received
-                    await signIn(response.data.token, response.data.user_data);  // Assuming `userId` is returned from backend
-                } else {
-                    console.log(userInfo.data.idToken);
-                    Alert.alert('Error', response.data.message || 'Failed to authenticate');
-                }
+                    token: userInfo.data.idToken
+                    });
+                    
+                    await  signIn(response.data);
+                  } catch (error) {
+                    console.error(
+                      'Login failed:',
+                      error.response?.data?.error || error.message
+                    );
+                    
+                  }
+                  
+                // Send the ID token to the backend for authentication
+                // const response = await axios.post('http://192.168.218.3/LormaER/public/mobile-backend/mobile-login.php', {
+                //     email: userInfo.data.user.email,
+                //     name: userInfo.data.user.name,
+                //     picture: userInfo.data.user.photo,
+                //     idToken: userInfo.data.idToken
+                // });
+                // if (response.data.success) {
+                //     // If backend login is successful, use the token received
+                //     await signIn(response.data.token, response.data.user_data);  // Assuming `userId` is returned from backend
+                // } else {
+                //     console.log(userInfo.data.idToken);
+                //     Alert.alert('Error', response.data.message || 'Failed to authenticate');
+                // }
             } else {
                 Alert.alert('Error', 'Failed to get authentication token');
             }

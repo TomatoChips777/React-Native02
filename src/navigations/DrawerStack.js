@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import { View, Text, TouchableOpacity, Image, Alert, StyleSheet } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList } from '@react-navigation/drawer';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,9 +9,40 @@ import LostAndFoundStack from './Lost&FoundStack';
 import HomeStack from './HomeStack';
 import ReportStack from './ReportStack';
 import NotifcationScreen from '../screens/NotificationScreen';
+import io from 'socket.io-client';
+import NotificationsModel from '../../backend/notifications-api';
+
 const Drawer = createDrawerNavigator();
 
 const DrawerNavigator = () => {
+  const {user} = useContext(AuthContext);
+  const [notificationsCount, setNotificationCount] = useState(0);
+
+  const fetchNotifications = async () => {
+      
+    try{
+      const response = await NotificationsModel.getNotifications(user.id);
+      const unreadNotifications = response.data.filter(notification => notification.is_read === 0);
+
+      setNotificationCount(unreadNotifications.length);
+    }catch(error){
+      console.log(error)
+    }
+  };
+
+  useEffect(() => {
+    
+    fetchNotifications();
+
+    const socket = io('http://192.168.218.3:5000');
+    socket.on('update', ()=>{
+      fetchNotifications();
+
+    });
+
+    return () => socket.disconnect();
+  }, []);
+
   return (
     <Drawer.Navigator 
       initialRouteName="Home"
@@ -24,11 +55,19 @@ const DrawerNavigator = () => {
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+
         headerRight: () => (
           <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
-            <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={{ marginRight: 15 }}>
-              <Ionicons name="notifications-outline" size={24} color="white" />
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 15 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Notifications')} style={styles.notificationIcon}>
+              <Ionicons name="notifications-outline" size={28} color="white" />
+              {notificationsCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{notificationsCount}</Text>
+                </View>
+              )}
             </TouchableOpacity>
+          </View>
           </View>
         ),
       })}
@@ -75,7 +114,7 @@ function CustomDrawerContent(props) {
     <DrawerContentScrollView {...props}>
       <View style={styles.profileContainer}>
         <Image 
-          source={{ uri: user?.photo || 'https://via.placeholder.com/80' }}
+          source={{ uri: user?.image_url || 'https://via.placeholder.com/80' }}
           style={styles.drawerProfileImage}
         />
         <Text style={styles.userName}>{user?.name || 'John Doe'}</Text>
@@ -121,7 +160,27 @@ const styles = StyleSheet.create({
         borderTopWidth: 1,
         borderTopColor: '#ddd',
         marginTop: 'auto',
-    }
+    },
+    notificationIcon: {
+      position: 'relative',
+      padding: 5,
+    },
+    badge: {
+      position: 'absolute',
+      top: -3,
+      right: -3,
+      backgroundColor: 'red',
+      borderRadius: 10,
+      width: 18,
+      height: 18,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    badgeText: {
+      color: 'white',
+      fontSize: 12,
+      fontWeight: 'bold',
+    },
 });
 
 export default DrawerNavigator;

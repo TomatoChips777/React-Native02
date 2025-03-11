@@ -4,27 +4,51 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { AuthContext } from '../../../AuthContext';
 import ReportModel from '../../../backend/report-api';
+import { io } from 'socket.io-client';
 const ReportScreen = () => {
     const { user } = useContext(AuthContext);
     const navigation = useNavigation();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
-    useFocusEffect(
-        useCallback(() => {
-            fetchReports();
-        }, [])
-    );
+    const [socket, setSocket] = useState(null);
 
     const fetchReports = async () => {
         setLoading(true);
-        const response = await ReportModel.getReportsByUser(user.userId);
-        if (response.success) {
-            setReports(response.data);
+        const response = await ReportModel.getReportsByUser(user.id);
+
+        if (response.success && response.reports) {
+            setReports(response.reports);
         } else {
             Alert.alert("Error", "Failed to fetch reports.");
         }
+
         setLoading(false);
     };
+
+    useEffect(() => {
+        fetchReports();
+        const socket = io('http://192.168.218.3:5000');
+        setSocket(socket);
+
+        socket.on('updatedStatus', (data) => {
+            setReports((prevReports) =>
+                prevReports.map((report) =>
+                    report.id === Number(data.reportId) ? { ...report, status: data.status } : report
+                )
+            );
+        });
+
+        socket.on('reportDeleted', (data) =>{
+            setReports((prevReports) =>
+                prevReports.filter((report) => report.id !== Number(data.reportId))
+            );
+        })
+
+        return () => socket.disconnect();
+    }, []);
+
+
+
 
     const [selectedStatus, setSelectedStatus] = useState(null);
 

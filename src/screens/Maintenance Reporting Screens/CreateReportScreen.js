@@ -75,7 +75,8 @@ function CreateReportScreen({ navigation, route }) {
                 issueType,
                 description,
                 image || existingReport.image_path,
-                user.userId
+                user.id,
+                user.role
             );
 
             setLoading(false);
@@ -90,8 +91,8 @@ function CreateReportScreen({ navigation, route }) {
             }
             setModalVisible(true);
         } else {
-            const response = await ReportModel.createReport(location, issueType, description, image);
-
+            const response = await ReportModel.createReport(user.id, location, issueType, description, image, user.role);
+                
             setLoading(false);
 
             if (response.success) {
@@ -106,6 +107,8 @@ function CreateReportScreen({ navigation, route }) {
             setModalVisible(true);
         }
         setLoading(false);
+        // console.log("Error");
+        
     };
 
     const pickImage = async () => {
@@ -133,7 +136,7 @@ function CreateReportScreen({ navigation, route }) {
                     source={{
                         uri: image.startsWith('file://')
                             ? image
-                            : `http://192.168.218.3/LormaER/public/mobile-backend/uploads/${image}`
+                            : `http://192.168.218.3:5000/uploads/${image}`
                     }}
                     style={styles.imagePreview}
                 />
@@ -215,7 +218,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: 'white',
+        backgroundColor: '#edf0ee',
     },
     title: {
         fontSize: 22,
@@ -235,7 +238,7 @@ const styles = StyleSheet.create({
         padding: 12,
         borderRadius: 10,
         marginTop: 5,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: 'white',
     },
     textArea: {
         height: 200,
@@ -247,7 +250,7 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         overflow: 'hidden',
         marginTop: 5,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: 'white',
     },
     picker: {
         height: 50,
